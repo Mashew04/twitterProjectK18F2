@@ -1,7 +1,15 @@
-import { Router } from 'express'
+import { NextFunction, Request, Response, Router } from 'express'
 import { loginController, registerController } from '~/controllers/users.controllers'
 import { loginValidator, registerValidator } from '~/middlewares/users.middlewares'
+import { wrapAsync } from '~/utils/handlers'
 const usersRoute = Router()
+
+/*
+des: đăng nhập
+path: /users/login
+method: POST
+body: {email, password}
+*/
 
 usersRoute.get('/login', loginValidator, loginController)
 
@@ -19,6 +27,6 @@ body{
     // Quy ước collection trong Mongo là neckcase
 }
 */
-usersRoute.post('/register', registerValidator, registerController)
+usersRoute.post('/register', registerValidator, wrapAsync(registerController))
 
 export default usersRoute
