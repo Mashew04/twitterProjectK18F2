@@ -213,6 +213,7 @@ export const accessTokenValidator = validate(
               // NẾU CÓ ACCESS TOKEN THÌ MÌNH PHẢI VERIFY ACCESSTOKEN
               const decoded_authorization = await verifyToken({ token: access_token })
               // LẤY RA DECODED_AUTHORIZATION(PAYLOAD), LƯU VÀO REQUEST, ĐỂ DÙNG DẦN
+              ;(req as Request).decoded_authorization = decoded_authorization
               req.decoded_authorization = decoded_authorization
             } catch (error) {
               throw new ErrorWithStatus({
@@ -255,7 +256,7 @@ export const refreshTokenValidator = validate(
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
-              req.decoded_refresh_token = decoded_refresh_token
+              ;(req as Request).decoded_refresh_token = decoded_refresh_token
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
                 throw new ErrorWithStatus({
