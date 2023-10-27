@@ -4,6 +4,8 @@ import { RegisterReqBody } from '~/models/requests/User.request'
 import { hashPassword } from '~/utils/crypto'
 import { signToken } from '~/utils/jwt'
 import { TokenType } from '~/constants/enums'
+import RefreshToken from '~/models/schemas/RefreshToken.schema'
+import { ObjectId } from 'mongodb'
 
 class UsersService {
   // HÀM NHẬN VÀP USER_ID VÀ BỎ VÀO PAYLOAD ĐỂ TẠO ACCESS_TOKEN
@@ -39,10 +41,25 @@ class UsersService {
     )
     const user_id = result.insertedId.toString()
     const [access_token, refresh_token] = await this.signAccessAndFreshToken(user_id)
+    // LƯU REFRESH_TOKEN VÀO db
+    await databaseServices.refreshToken.insertOne(
+      new RefreshToken({
+        token: refresh_token,
+        user_id: new ObjectId(user_id)
+      })
+    )
     return { access_token, refresh_token }
   }
+
   async login(user_id: string) {
     const [access_token, refresh_token] = await this.signAccessAndFreshToken(user_id)
+    //LƯU REFRESH_TOKEN VÀO DB
+    await databaseServices.refreshToken.insertOne(
+      new RefreshToken({
+        token: refresh_token,
+        user_id: new ObjectId(user_id)
+      })
+    )
     return { access_token, refresh_token }
   }
 }
