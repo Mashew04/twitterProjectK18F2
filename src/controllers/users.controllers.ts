@@ -1,13 +1,12 @@
 import { Request, Response } from 'express'
 import User from '~/models/schemas/User.schema'
-import databaseServices from '~/services/database.services'
 import usersService from '~/services/users.services'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { LogoutReqBody, RegisterReqBody, loginReqBody } from '~/models/requests/User.request'
+import { LogoutReqBody, RegisterReqBody, LoginReqBody } from '~/models/requests/User.request'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
 
-export const loginController = async (req: Request<ParamsDictionary, any, loginReqBody>, res: Response) => {
+export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   // LẤY USER_ID TỪ USER REQ
   const user = req.user as User
   const user_id = user._id as ObjectId
