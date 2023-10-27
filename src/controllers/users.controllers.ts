@@ -6,6 +6,7 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { RegisterReqBody } from '~/models/requests/User.request'
 
 export const loginController = async (req: Request, res: Response) => {
+  throw new Error('Test Lỗi')
   // LẤY USER_ID TỪ USER REQ
   const { user }: any = req
   const user_id = user._id
