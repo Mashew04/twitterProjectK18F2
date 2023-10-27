@@ -29,6 +29,6 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
 }
 export const logoutController = async (req: Request, res: Response) => {
   res.json({
-    message: 'Login Successully'
+    message: 'Logout Successully'
   })
 }
