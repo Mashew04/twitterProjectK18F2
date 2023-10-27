@@ -95,10 +95,15 @@ export const registerValidator = validate(
       custom: {
         // check lỗi
         options: async (value, { req }) => {
-          const isExist = await usersService.checkEmailExist(value)
-          if (isExist) {
-            throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS)
+          // DỪA VÀO EMALIL TÌM ĐỐI TƯỢNG USERS TƯƠNG ỨNG
+          const user = await databaseServices.users.findOne({
+            email: value,
+            password: hashPassword(req.body.password)
+          })
+          if (user == null) {
+            throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT)
           }
+          req.user = user
           return true
         }
       }
