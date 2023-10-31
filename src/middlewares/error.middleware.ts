@@ -6,7 +6,7 @@ import { ErrorWithStatus } from '~/models/Errors'
 export const defaultErrorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   //   LỖI TỪ CÁC NƠI SẼ DỒN VỀ ĐÂY
   if (err instanceof ErrorWithStatus) {
-    res.status(err.status || HTTP_STATUS.INTERNAL_SERVER_ERROR).json(omit(err, ['status']))
+    return res.status(err.status || HTTP_STATUS.INTERNAL_SERVER_ERROR).json(omit(err, ['status']))
   }
   // NẾU MÀ LỖI XUỐNG ĐƯỢC ĐÂY
   // SET NAME, STACK, MESSAGE VỀ ENUMERABLE : TRUE
