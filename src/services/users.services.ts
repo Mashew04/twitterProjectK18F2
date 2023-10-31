@@ -3,7 +3,7 @@ import databaseServices from './database.services'
 import { RegisterReqBody } from '~/models/requests/User.request'
 import { hashPassword } from '~/utils/crypto'
 import { signToken } from '~/utils/jwt'
-import { TokenType } from '~/constants/enums'
+import { TokenType, UserVerifyStatus } from '~/constants/enums'
 import RefreshToken from '~/models/schemas/RefreshToken.schema'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
@@ -82,6 +82,33 @@ class UsersService {
   async logout(refresh_token: string) {
     await databaseServices.refreshToken.deleteOne({ token: refresh_token })
     return { message: USERS_MESSAGES.LOGOUT_SUCCESS }
+  }
+  async verifyEmail(user_id: string) {
+    // UPDATE LẠI USER
+    await databaseServices.users.updateOne(
+      {
+        _id: new ObjectId(user_id)
+      },
+      [
+        {
+          $set: {
+            verify: UserVerifyStatus.Verified,
+            email_verify_token: '',
+            update_at: '$$NOW'
+          }
+        }
+      ]
+    )
+    // TẠO RA ACCESS TOKEN VÀ REFRESH TOKEN
+    const [access_token, refresh_token] = await this.signAccessAndFreshToken(user_id)
+    // LƯU REFRESH_TOKEN VÀO DB
+    await databaseServices.refreshToken.insertOne(
+      new RefreshToken({
+        token: refresh_token,
+        user_id: new ObjectId(user_id)
+      })
+    )
+    return { access_token, refresh_token }
   }
 }
 
