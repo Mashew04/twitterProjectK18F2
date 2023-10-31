@@ -211,7 +211,10 @@ export const accessTokenValidator = validate(
             }
             try {
               // NẾU CÓ ACCESS TOKEN THÌ MÌNH PHẢI VERIFY ACCESSTOKEN
-              const decoded_authorization = await verifyToken({ token: access_token })
+              const decoded_authorization = await verifyToken({
+                token: access_token,
+                secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
+              })
               // LẤY RA DECODED_AUTHORIZATION(PAYLOAD), LƯU VÀO REQUEST, ĐỂ DÙNG DẦN
               ;(req as Request).decoded_authorization = decoded_authorization
               req.decoded_authorization = decoded_authorization
@@ -243,7 +246,7 @@ export const refreshTokenValidator = validate(
             // VERIFY REFRESH_TOKEN ĐỂ LẤY DECODED_REFRESH_TOKEN
             try {
               const [decoded_refresh_token, refresh_token] = await Promise.all([
-                verifyToken({ token: value }),
+                verifyToken({ token: value, secretOrPublicKey: process.env.JWT_SECRET_REFRESH_TOKEN as string }),
                 databaseServices.refreshToken.findOne({
                   token: value
                 })
