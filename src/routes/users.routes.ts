@@ -3,7 +3,8 @@ import {
   emailVerifyTokenController,
   loginController,
   logoutController,
-  registerController
+  registerController,
+  resendEmailVerifyController
 } from '~/controllers/users.controllers'
 import {
   accessTokenValidator,
@@ -65,4 +66,16 @@ body : {email_verify_token : string }
 
 usersRoute.post('/verify-email', emailVerifyTokenValidator, wrapAsync(emailVerifyTokenController))
 
+/*
+DES : Resend Email Verify Token
+Khi maill thất lạc hoặc email_verify_token hết hạn, thì người dùng có nhu cầu resend emial_verify_token
+
+
+method : POST 
+path : /users/resend verify-email-token
+headers : {Authorization : "Bear<access_token>"} // Đăng nhập mới được resend
+body : {}
+*/
+
+usersRoute.post('/resend-verify-email', accessTokenValidator, wrapAsync(resendEmailVerifyController))
 export default usersRoute
