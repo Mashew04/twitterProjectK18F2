@@ -10,33 +10,33 @@ import { USERS_MESSAGES } from '~/constants/messages'
 
 class UsersService {
   // HÀM NHẬN VÀP USER_ID VÀ BỎ VÀO PAYLOAD ĐỂ TẠO ACCESS_TOKEN
-  private signAccessToken(user_id: string) {
+  private signAccessToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id, token_type: TokenType.AccessToken },
+      payload: { user_id, token_type: TokenType.AccessToken, verify },
       options: { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_IN },
       privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
     })
   }
   // HÀM NHẬN VÀP USER_ID VÀ BỎ VÀO PAYLOAD ĐỂ TẠO REFRESH_TOKEN
-  private signRefreshToken(user_id: string) {
+  private signRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id, token_type: TokenType.RefreshToken },
+      payload: { user_id, token_type: TokenType.RefreshToken, verify },
       options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_IN },
       privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
     })
   }
 
   // HÀM SIGNEMAILVERIFYTOKEN
-  private signEmailVerifyToken(user_id: string) {
+  private signEmailVerifyToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id, token_type: TokenType.EmailVerificationToken },
+      payload: { user_id, token_type: TokenType.EmailVerificationToken, verify },
       options: { expiresIn: process.env.EMAIL_VERIFY_TOKEN_EXPIRE_IN },
       privateKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
     })
   }
   // KÍ ACCESS_TOKEN VÀ REFRESH_TOKEN
-  private signAccessAndFreshToken(user_id: string) {
-    return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
+  private signAccessAndFreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+    return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
   }
 
   async checkEmailExist(email: string) {
@@ -45,7 +45,10 @@ class UsersService {
   }
   async register(payload: RegisterReqBody) {
     const user_id = new ObjectId()
-    const email_verify_token = await this.signEmailVerifyToken(user_id.toString())
+    const email_verify_token = await this.signEmailVerifyToken({
+      user_id: user_id.toString(),
+      verify: UserVerifyStatus.Unverified
+    })
     const result = await databaseServices.users.insertOne(
       new User({
         ...payload,
@@ -55,7 +58,11 @@ class UsersService {
         password: hashPassword(payload.password)
       })
     )
-    const [access_token, refresh_token] = await this.signAccessAndFreshToken(user_id.toString())
+    const [access_token, refresh_token] = await this.signAccessAndFreshToken({
+      user_id: user_id.toString(),
+      verify: UserVerifyStatus.Unverified
+    })
+
     // LƯU REFRESH_TOKEN VÀO db
     await databaseServices.refreshToken.insertOne(
       new RefreshToken({
@@ -68,8 +75,11 @@ class UsersService {
     return { access_token, refresh_token }
   }
 
-  async login(user_id: string) {
-    const [access_token, refresh_token] = await this.signAccessAndFreshToken(user_id)
+  async login({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
+    const [access_token, refresh_token] = await this.signAccessAndFreshToken({
+      user_id,
+      verify
+    })
     //LƯU REFRESH_TOKEN VÀO DB
     await databaseServices.refreshToken.insertOne(
       new RefreshToken({
@@ -100,7 +110,10 @@ class UsersService {
       ]
     )
     // TẠO RA ACCESS TOKEN VÀ REFRESH TOKEN
-    const [access_token, refresh_token] = await this.signAccessAndFreshToken(user_id)
+    const [access_token, refresh_token] = await this.signAccessAndFreshToken({
+      user_id,
+      verify: UserVerifyStatus.Verified //1
+    })
     // LƯU REFRESH_TOKEN VÀO DB
     await databaseServices.refreshToken.insertOne(
       new RefreshToken({
@@ -113,7 +126,10 @@ class UsersService {
 
   async resendEmailVerify(user_id: string) {
     // Tạo ra email_verify_token
-    const email_verify_token = await this.signEmailVerifyToken(user_id)
+    const email_verify_token = await this.signEmailVerifyToken({
+      user_id,
+      verify: UserVerifyStatus.Unverified // 0
+    })
     // UPDATE LẠI USER
     await databaseServices.users.updateOne({ _id: new ObjectId(user_id) }, [
       {
@@ -128,16 +144,16 @@ class UsersService {
   }
 
   // HÀM NHẬN VÀP USER_ID VÀ BỎ VÀO PAYLOAD ĐỂ TẠO REFRESH_TOKEN
-  private signForgotPasswordToken(user_id: string) {
+  private signForgotPasswordToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     return signToken({
-      payload: { user_id, token_type: TokenType.RefreshToken },
+      payload: { user_id, token_type: TokenType.RefreshToken, verify },
       options: { expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRE_IN },
       privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
     })
   }
-  async forgotPassword(user_id: string) {
+  async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
     // TẠO RA FORGOT PASSWORD TOKEN
-    const forgot_password_token = await this.signForgotPasswordToken(user_id)
+    const forgot_password_token = await this.signForgotPasswordToken({ user_id, verify })
     // UPDATE LẠI USER
     await databaseServices.users.updateOne({ _id: new ObjectId(user_id) }, [
       {

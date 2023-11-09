@@ -22,7 +22,7 @@ export const loginController = async (req: Request<ParamsDictionary, any, LoginR
   const user = req.user as User
   const user_id = user._id as ObjectId
   // DÙNG USER_ID TẠO ACCESS_TOKEN VÀ REFRESH_TOKEN
-  const result = await usersService.login(user_id.toString())
+  const result = await usersService.login({ user_id: user_id.toString(), verify: user.verify })
   // RES ACCESS_TOKEN VÀ REFRESH_TOKEN CHO CLIENT
   res.json({
     message: USERS_MESSAGES.LOGIN_SUCCESS,
@@ -111,9 +111,9 @@ export const resendEmailVerifyController = async (req: Request, res: Response) =
 
 export const forgotPasswordController = async (req: Request, res: Response) => {
   // LẤY USER_ID TỪ USER CỦA REQ
-  const { _id } = req.user as User
+  const { _id, verify } = req.user as User
   // DÙNG _ID TÌM VÀ CẬP NHẬT LẠI USER THÊM VÀO forgot_password_token
-  const result = await usersService.forgotPassword((_id as ObjectId).toString())
+  const result = await usersService.forgotPassword({ user_id: (_id as ObjectId).toString(), verify })
   return res.json(result)
 }
 export const verifyForgotPasswordTokenController = async (req: Request, res: Response) => {
