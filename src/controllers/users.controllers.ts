@@ -11,7 +11,8 @@ import {
   ResetPasswordReqBody,
   UpdateMeReqBody,
   GetProfileReqParams,
-  FollowReqBody
+  FollowReqBody,
+  UnfollowReqParams
 } from '~/models/requests/User.request'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
@@ -178,5 +179,15 @@ export const followController = async (
   const { user_id } = req.decoded_authorization as TokenPayload //lấy user_id từ decoded_authorization của access_token
   const { followed_user_id } = req.body //lấy followed_user_id từ req.body
   const result = await usersService.follow(user_id, followed_user_id) //chưa có method này
+  return res.json(result)
+}
+
+export const unfollowController = async (req: Request<UnfollowReqParams>, res: Response, next: NextFunction) => {
+  //LẤY RA USER_ID,, NGƯỜI MUỐN UNFOLLOW
+  const { user_id } = req.decoded_authorization as TokenPayload
+  // LẤY RA NGƯỜI MUỐN UNFOLLOW
+  const { user_id: followed_user_id } = req.params
+  // GỌI HÀM UNFOLLOW
+  const result = await usersService.unfollow(user_id, followed_user_id)
   return res.json(result)
 }

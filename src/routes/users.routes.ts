@@ -10,6 +10,7 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswordController,
+  unfollowController,
   updateMeController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controllers'
@@ -23,6 +24,7 @@ import {
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  unfollowValidator,
   updateMeValidator,
   verifiedUserValidator,
   verifyForgotPasswordTokenValidator
@@ -156,7 +158,7 @@ path: '/:username'
 method: get
 không cần header vì, chưa đăng nhập cũng có thể xem
 */
-usersRoute.get('/:username', wrapAsync(getProfileController))
+usersRoute.post('/:username', wrapAsync(getProfileController))
 //chưa có controller getProfileController, nên bây giờ ta làm
 
 /*
@@ -167,11 +169,28 @@ headers: {Authorization: Bearer <access_token>}
 body: {followed_user_id: string}
 */
 
-usersRoute.get('/follow', accessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(followController))
+usersRoute.post('/follow', accessTokenValidator, verifiedUserValidator, followValidator, wrapAsync(followController))
 //accessTokenValidator dùng dể kiểm tra xem ngta có đăng nhập hay chưa, và có đc user_id của người dùng từ req.decoded_authorization
 //verifiedUserValidator dùng để kiễm tra xem ngta đã verify email hay chưa, rồi thì mới cho follow người khác
 //trong req.body có followed_user_id  là mã của người mà ngta muốn follow
 //followValidator: kiểm tra followed_user_id truyền lên có đúng định dạng objectId hay không
 //  account đó có tồn tại hay không
 //followController: tiến hành thao tác tạo document vào collection followers
+
+/*
+    des: unfollow someone
+    path: '/follow/:user_id'
+    method: delete
+    headers: {Authorization: Bearer <access_token>}
+  g}
+    */
+usersRoute.delete(
+  '/follow/:user_id',
+  accessTokenValidator,
+  verifiedUserValidator,
+  unfollowValidator,
+  wrapAsync(unfollowController)
+)
+
+//unfollowValidator: kiểm tra user_id truyền qua params có hợp lệ hay k?
 export default usersRoute
