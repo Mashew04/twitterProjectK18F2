@@ -108,7 +108,7 @@ class UsersService {
           $set: {
             verify: UserVerifyStatus.Verified,
             email_verify_token: '',
-            update_at: '$$NOW'
+            updated_at: '$$NOW'
           }
         }
       ]
@@ -139,7 +139,7 @@ class UsersService {
       {
         $set: {
           email_verify_token,
-          update_at: '$$NOW'
+          updated_at: '$$NOW'
         }
       }
     ])
@@ -163,7 +163,7 @@ class UsersService {
       {
         $set: {
           forgot_password_token,
-          update_at: '$$NOW'
+          updated_at: '$$NOW'
         }
       }
     ])
