@@ -9,7 +9,8 @@ import {
   TokenPayload,
   VerifyEmailReqqBody,
   ResetPasswordReqBody,
-  UpdateMeReqBody
+  UpdateMeReqBody,
+  GetProfileReqParams
 } from '~/models/requests/User.request'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
@@ -155,5 +156,15 @@ export const updateMeController = async (req: Request<ParamsDictionary, any, Upd
   return res.json({
     message: USERS_MESSAGES.UPDATE_ME_SUCCESS,
     result
+  })
+}
+
+export const getProfileController = async (req: Request<GetProfileReqParams>, res: Response) => {
+  // TÌM USERNAME THEO USERNAME
+  const { username } = req.params
+  const user = await usersService.getProfile(username)
+  return res.json({
+    message: USERS_MESSAGES.GET_PROFILE_SUCCESS,
+    result: user
   })
 }
