@@ -8,6 +8,7 @@ import {
   registerController,
   resendEmailVerifyController,
   resetPasswordController,
+  updateMeController,
   verifyForgotPasswordTokenController
 } from '~/controllers/users.controllers'
 import {
@@ -18,6 +19,8 @@ import {
   refreshTokenValidator,
   registerValidator,
   resetPasswordValidator,
+  updateMeValidator,
+  verifiedUserValidator,
   verifyForgotPasswordTokenValidator
 } from '~/middlewares/users.middlewares'
 import { wrapAsync } from '~/utils/handlers'
@@ -132,5 +135,7 @@ Header: {Authorization: Bearer <access_token>}
 body: {}
 */
 usersRoute.get('/me', accessTokenValidator, wrapAsync(getMeController))
+
+usersRoute.patch('/me', accessTokenValidator, verifiedUserValidator, updateMeValidator, wrapAsync(updateMeController))
 
 export default usersRoute

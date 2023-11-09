@@ -8,7 +8,8 @@ import {
   LoginReqBody,
   TokenPayload,
   VerifyEmailReqqBody,
-  ResetPasswordReqBody
+  ResetPasswordReqBody,
+  UpdateMeReqBody
 } from '~/models/requests/User.request'
 import { ObjectId } from 'mongodb'
 import { USERS_MESSAGES } from '~/constants/messages'
@@ -142,5 +143,17 @@ export const getMeController = async (req: Request, res: Response) => {
   return res.json({
     message: USERS_MESSAGES.GET_ME_SUCCESS,
     result: user
+  })
+}
+
+export const updateMeController = async (req: Request<ParamsDictionary, any, UpdateMeReqBody>, res: Response) => {
+  // MUỐN UPDATE THÌ CẦN USER_ID CỦA MÌNH VÀ CÁC THÔNG TIN CẦN UPDATE
+  const { user_id } = req.decoded_authorization as TokenPayload
+  const { body } = req
+  // UPDATE LẠI USER
+  const result = await usersService.updateMe(user_id, body)
+  return res.json({
+    message: USERS_MESSAGES.UPDATE_ME_SUCCESS,
+    result
   })
 }
