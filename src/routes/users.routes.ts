@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express'
 import {
+  changePasswordController,
   emailVerifyTokenController,
   followController,
   forgotPasswordController,
@@ -7,6 +8,7 @@ import {
   getProfileController,
   loginController,
   logoutController,
+  refreshTokenController,
   registerController,
   resendEmailVerifyController,
   resetPasswordController,
@@ -17,6 +19,7 @@ import {
 import { filterMiddleware } from '~/middlewares/common.middleware'
 import {
   accessTokenValidator,
+  changePasswordValidator,
   emailVerifyTokenValidator,
   followValidator,
   forgotPasswordValidator,
@@ -40,7 +43,7 @@ method: POST
 body: {email, password}
 */
 
-usersRoute.get('/login', loginValidator, wrapAsync(loginController))
+usersRoute.post('/login', loginValidator, wrapAsync(loginController))
 
 /*
 Description : Register New User
@@ -185,12 +188,41 @@ usersRoute.post('/follow', accessTokenValidator, verifiedUserValidator, followVa
   g}
     */
 usersRoute.delete(
-  '/follow/:user_id',
+  '/unfollow/:user_id',
   accessTokenValidator,
   verifiedUserValidator,
   unfollowValidator,
   wrapAsync(unfollowController)
 )
 
+/*
+  des: change password
+  path: '/change-password'
+  method: PUT
+  headers: {Authorization: Bearer <access_token>}
+  Body: {old_password: string, password: string, confirm_password: string}
+g}
+  */
+usersRoute.put(
+  '/change-password',
+  accessTokenValidator,
+  verifiedUserValidator,
+  changePasswordValidator,
+  wrapAsync(changePasswordController)
+)
+//changePasswordValidator kiểm tra các giá trị truyền lên trên body cớ valid k ?
+
+/*
+  des: refreshtoken
+  path: '/refresh-token'
+  method: POST
+  Body: {refresh_token: string}
+g}
+  */
+usersRoute.post('/refresh-token', refreshTokenValidator, wrapAsync(refreshTokenController))
+//khỏi kiểm tra accesstoken, tại nó hết hạn rồi mà
+//refreshController chưa làm
 //unfollowValidator: kiểm tra user_id truyền qua params có hợp lệ hay k?
 export default usersRoute
+
+// HÀM FOLLOW VÀ HÀM REFRESHTOKEN CHƯA CHẠY ĐƯỢC

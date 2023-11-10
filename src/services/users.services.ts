@@ -268,25 +268,80 @@ class UsersService {
       message: USERS_MESSAGES.FOLLOW_SUCCESS //trong message.ts thêm   FOLLOW_SUCCESS: 'Follow success'
     }
   }
-
   async unfollow(user_id: string, followed_user_id: string) {
-    // KIỂM TRA MÌNH ĐÃ FOLLOW CHƯA
+    //kiểm tra xem đã follow hay chưa
     const isFollowed = await databaseServices.followers.findOne({
       user_id: new ObjectId(user_id),
       followed_user_id: new ObjectId(followed_user_id)
     })
-    if (!isFollowed) {
+
+    //nếu chưa follow thì return message là "đã unfollow trước đó" luôn
+    if (isFollowed == null) {
       return {
-        message: USERS_MESSAGES.ALREADY_FOLLOWED
+        message: USERS_MESSAGES.ALREADY_UNFOLLOWED // trong message.ts thêm ALREADY_UNFOLLOWED: 'Already unfollowed'
       }
     }
-    await databaseServices.followers.deleteOne({
+
+    //nếu đang follow thì tìm và xóa document đó
+    const result = await databaseServices.followers.deleteOne({
       user_id: new ObjectId(user_id),
       followed_user_id: new ObjectId(followed_user_id)
     })
+
+    //nếu xóa thành công thì return message là unfollow success
     return {
-      message: USERS_MESSAGES.UNFOLLOW_SUCCESS
+      message: USERS_MESSAGES.UNFOLLOW_SUCCESS // trong message.ts thêm UNFOLLOW_SUCCESS: 'Unfollow success'
     }
+  }
+
+  async changePassword(user_id: string, password: string) {
+    //tìm user thông qua user_id
+    //cập nhật lại password và forgot_password_token
+    //tất nhiên là lưu password đã hash rồi
+    await databaseServices.users.updateOne({ _id: new ObjectId(user_id) }, [
+      {
+        $set: {
+          password: hashPassword(password),
+          forgot_password_token: '',
+          updated_at: '$$NOW'
+        }
+      }
+    ])
+    //nếu bạn muốn ngta đổi mk xong tự động đăng nhập luôn thì trả về access_token và refresh_token
+    //ở đây mình chỉ cho ngta đổi mk thôi, nên trả về message
+    return {
+      message: USERS_MESSAGES.CHANGE_PASSWORD_SUCCESS // trong message.ts thêm CHANGE_PASSWORD_SUCCESS: 'Change password success'
+    }
+  }
+
+  async refreshToken({
+    user_id,
+    verify,
+    refresh_token
+  }: {
+    user_id: string
+    verify: UserVerifyStatus
+    refresh_token: string
+  }) {
+    //tạo mới
+    const [access_token, new_refresh_token] = await Promise.all([
+      this.signAccessToken({
+        user_id: user_id,
+        verify
+      }),
+      this.signRefreshToken({
+        user_id: user_id,
+        verify
+      })
+    ])
+    //vì một người đăng nhập ở nhiều nơi khác nhau, nên họ sẽ có rất nhiều document trong collection refreshTokens
+    //ta không thể dùng user_id để tìm document cần update, mà phải dùng token, đọc trong RefreshToken.schema.ts
+    await databaseServices.refreshToken.deleteOne({ token: refresh_token }) //xóa refresh
+    //insert lại document mới
+    await databaseServices.refreshToken.insertOne(
+      new RefreshToken({ user_id: new ObjectId(user_id), token: new_refresh_token })
+    )
+    return { access_token, refresh_token: new_refresh_token }
   }
 }
 
