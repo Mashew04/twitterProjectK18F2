@@ -371,5 +371,7 @@ class UsersService {
     console.log(result)
   }
 }
+
+//MỚI XONG PHẦN SERVICE, BÂY GIỜ TA LÀM CONTROLLER
 const usersService = new UsersService()
 export default usersService

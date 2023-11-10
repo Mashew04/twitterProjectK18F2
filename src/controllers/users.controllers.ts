@@ -219,4 +219,11 @@ export const refreshTokenController = async (
   })
 }
 
-export const oAuthController = async (req: Request, res: Response, next: NextFunction) => {}
+export const oAuthController = async (req: Request, res: Response, next: NextFunction) => {
+  const { code } = req.query
+  const result = await usersService.oAuth(code as string)
+  return res.json({
+    message: USERS_MESSAGES.OAUTH_SUCCESS,
+    result
+  })
+}
