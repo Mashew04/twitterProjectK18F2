@@ -10,6 +10,7 @@ import { USERS_MESSAGES } from '~/constants/messages'
 import { ErrorWithStatus } from '~/models/Errors'
 import HTTP_STATUS from '~/constants/httpStatus'
 import { Follower } from '~/models/schemas/Followers.schema'
+import axios from 'axios'
 
 class UsersService {
   // HÀM NHẬN VÀP USER_ID VÀ BỎ VÀO PAYLOAD ĐỂ TẠO ACCESS_TOKEN
@@ -343,7 +344,32 @@ class UsersService {
     )
     return { access_token, refresh_token: new_refresh_token }
   }
-}
 
+  // GETOAUTHGOOGLETOKEN DÙNG CODE NHẬN ĐƯỢC ĐỂ YÊU CẦU GOOGLE TẠO ID_TOKEN
+  //getOAuthGoogleToken dùng code nhận đc để yêu cầu google tạo id_token
+  private async getOAuthGoogleToken(code: string) {
+    const body = {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID, //khai báo trong .env bằng giá trị trong file json
+      client_secret: process.env.GOOGLE_CLIENT_SECRET, //khai báo trong .env bằng giá trị trong file json
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI, //khai báo trong .env bằng giá trị trong file json
+      grant_type: 'authorization_code'
+    }
+    //giờ ta gọi api của google, truyền body này lên để lấy id_token
+    //ta dùng axios để gọi api `npm i axios`
+    const { data } = await axios.post(`https://oauth2.googleapis.com/token`, body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded' //kiểu truyền lên là form
+      }
+    }) //nhận đc response nhưng đã rã ra lấy data
+    return data
+  }
+
+  async oAuth(code: string) {
+    //dùng code lấy bộ token từ google
+    const result = await this.getOAuthGoogleToken(code)
+    console.log(result)
+  }
+}
 const usersService = new UsersService()
 export default usersService

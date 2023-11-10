@@ -218,3 +218,5 @@ export const refreshTokenController = async (
     result
   })
 }
+
+export const oAuthController = async (req: Request, res: Response, next: NextFunction) => {}

@@ -8,6 +8,7 @@ import {
   getProfileController,
   loginController,
   logoutController,
+  oAuthController,
   refreshTokenController,
   registerController,
   resendEmailVerifyController,
@@ -223,6 +224,8 @@ usersRoute.post('/refresh-token', refreshTokenValidator, wrapAsync(refreshTokenC
 //khỏi kiểm tra accesstoken, tại nó hết hạn rồi mà
 //refreshController chưa làm
 //unfollowValidator: kiểm tra user_id truyền qua params có hợp lệ hay k?
+
+usersRoute.get('/oauth/google', wrapAsync(oAuthController))
 export default usersRoute
 
 // HÀM FOLLOW VÀ HÀM REFRESHTOKEN CHƯA CHẠY ĐƯỢC
